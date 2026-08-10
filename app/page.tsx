@@ -57,7 +57,7 @@ function MottoModal({ onClose }: { onClose: () => void }) {
           </p>
           <div className="rounded-xl border border-[#252525] bg-[#151515] px-4 py-3">
             <p className="text-xs text-stone-500 italic leading-relaxed">
-              "We'll finish every task on this list — by hook or by crook."
+              "I'll finish every task on this list — by hook or by crook."
             </p>
           </div>
         </motion.div>
