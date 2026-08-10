@@ -88,7 +88,8 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
               <motion.div key="sheet"
                 initial={{ y: '110%' }} animate={{ y: 0 }} exit={{ y: '110%' }}
                 transition={{ type: 'spring', stiffness: 360, damping: 36 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-[#111111] rounded-t-[28px] shadow-2xl"
+                className="fixed bottom-0 left-0 right-0 z-50 bg-[#111111] rounded-t-[28px] shadow-2xl flex flex-col"
+                style={{ maxHeight: '85dvh' }}
               >
                 {/* Handle */}
                 <div className="flex justify-center pt-4 pb-2">
@@ -106,8 +107,8 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                   </button>
                 </div>
 
-                {/* Inputs */}
-                <div className="px-5 pt-2 pb-4">
+                {/* Inputs — scrollable middle */}
+                <div className="flex-1 overflow-y-auto px-5 pt-2 pb-4">
                   <input
                     ref={titleRef}
                     id="fab-task-title"
@@ -140,8 +141,8 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                   />
                 </div>
 
-                {/* Footer */}
-                <div className="px-5 pt-2 pb-10 border-t border-[#1f1f1f]">
+                {/* Footer — always pinned at bottom */}
+                <div className="shrink-0 px-5 pt-2 pb-10 border-t border-[#1f1f1f]">
                   <motion.button
                     id="fab-submit"
                     onClick={submit}
