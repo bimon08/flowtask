@@ -1,11 +1,14 @@
-/** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
+import withPWAInit from '@ducanh2912/next-pwa';
+
+const withPWA = withPWAInit({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  reloadOnOnline: true,
   cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  disable: false,           // always register SW (dev + prod)
+  workboxOptions: {
+    disableDevLogs: true,
+  },
   fallbacks: {
     document: '/offline.html',
   },
@@ -13,9 +16,6 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = withPWA({
   reactStrictMode: true,
-  // Empty turbopack config to silence the webpack/turbopack mismatch error.
-  // next-pwa uses webpack; Turbopack is enabled by default in Next.js 16.
-  turbopack: {},
 });
 
-module.exports = nextConfig;
+export default nextConfig;
