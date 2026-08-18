@@ -16,6 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { AnimatePresence } from 'framer-motion';
 import { useTaskStore } from '@/store/useTaskStore';
 import { Task } from '@/types/task';
 import SortableTaskItem from './SortableTaskItem';
@@ -46,9 +47,11 @@ export default function TaskList({ tasks, sortMode = 'manual' }: TaskListProps) 
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <div>
-          {tasks.map((task) => (
-            <SortableTaskItem key={task.id} task={task} dragDisabled={sortMode !== 'manual'} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {tasks.map((task) => (
+              <SortableTaskItem key={task.id} task={task} dragDisabled={sortMode !== 'manual'} />
+            ))}
+          </AnimatePresence>
         </div>
       </SortableContext>
     </DndContext>

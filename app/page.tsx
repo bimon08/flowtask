@@ -79,7 +79,12 @@ export default function Home() {
         <div className="mx-auto max-w-lg px-5 pt-12 pb-5">
 
           {/* Motto line */}
-          <div className="flex items-center gap-1.5 mb-3">
+          <motion.div
+            className="flex items-center gap-1.5 mb-3"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
             <span className="font-dot text-[10px] text-[var(--accent)] uppercase tracking-wider">
               By hook or by crook
             </span>
@@ -96,10 +101,17 @@ export default function Home() {
             >
               (?)
             </button>
-          </div>
+          </motion.div>
 
           {/* Date — dot-matrix style */}
-          <h1 className="font-dot text-xl text-white tracking-tight mb-1">{today}</h1>
+          <motion.h1
+            className="font-dot text-xl text-white tracking-tight mb-1"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+          >
+            {today}
+          </motion.h1>
 
           {/* Decorative dot line */}
           <div className="dot-line h-[2px] w-full mb-5 opacity-50" />
@@ -117,13 +129,20 @@ export default function Home() {
                 className={`
                   relative flex-1 py-2.5 text-center
                   font-dot text-[11px] tracking-wider
-                  transition-all duration-200
+                  transition-colors duration-200
                   ${viewMode === tab.id
-                    ? 'text-white border-b-2 border-[var(--accent)]'
+                    ? 'text-white'
                     : 'text-[#444] border-b border-[#1a1a1a] hover:text-[#777]'}
                 `}
               >
                 {tab.label}
+                {viewMode === tab.id && (
+                  <motion.div
+                    layoutId="view-tab-underline"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[var(--accent)]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
               </button>
             ))}
           </div>

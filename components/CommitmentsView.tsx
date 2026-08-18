@@ -5,6 +5,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTaskStore } from '@/store/useTaskStore';
 import CommitmentCard from './CommitmentCard';
 
+/* ─── Stagger variants ────────────────────────────────────── */
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 16, scale: 0.97 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' as const } },
+};
+
 export default function CommitmentsView() {
   const commitments = useTaskStore((s) => s.commitments);
   const [showPast, setShowPast] = useState(false);
@@ -18,49 +32,84 @@ export default function CommitmentsView() {
 
   return (
     <div>
-      {/* ── Empty state ── */}
+      {/* ── Empty state — animated dot grid ── */}
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center py-24 select-none">
-          {/* Nothing-style dot grid icon */}
-          <div className="grid grid-cols-3 gap-1 mb-4">
+        <motion.div
+          className="flex flex-col items-center justify-center py-24 select-none"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <div className="grid grid-cols-3 gap-1.5 mb-5">
             {[...Array(9)].map((_, i) => (
-              <div key={i} className={`w-2 h-2 ${i === 4 ? 'bg-[var(--accent)]' : 'bg-[#1a1a1a]'}`} />
+              <motion.div
+                key={i}
+                className={`w-2.5 h-2.5 rounded-sm ${i === 4 ? 'bg-[var(--accent)]' : 'bg-[#1a1a1a]'}`}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.05, type: 'spring', stiffness: 400, damping: 15 }}
+              />
             ))}
           </div>
-          <p className="font-dot text-[11px] text-[#333] uppercase tracking-wider mb-1">No commitments</p>
-          <p className="text-[11px] text-[#222] text-center max-w-[240px]">
+          <motion.p
+            className="font-dot text-[11px] text-[#333] uppercase tracking-wider mb-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            No commitments
+          </motion.p>
+          <motion.p
+            className="text-[11px] text-[#222] text-center max-w-[240px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
             Tap + to start a time-bound challenge
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       )}
 
-      {/* ── Active commitments ── */}
+      {/* ── Active commitments — staggered entry ── */}
       {active.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <motion.div
+          className="flex flex-col gap-3"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
           <AnimatePresence mode="popLayout">
             {active.map((c) => (
-              <CommitmentCard key={c.id} commitment={c} />
+              <motion.div key={c.id} variants={staggerItem} layout>
+                <CommitmentCard commitment={c} />
+              </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
       )}
 
-      {/* ── Past commitments ── */}
+      {/* ── Past commitments — collapsible with animation ── */}
       {past.length > 0 && (
-        <div className="mt-8">
-          <button
+        <motion.div
+          className="mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <motion.button
             onClick={() => setShowPast(!showPast)}
+            whileTap={{ scale: 0.97 }}
             className="flex items-center gap-2 font-dot text-[10px] uppercase tracking-wider text-[#444] mb-3 hover:text-[#777] transition-colors"
           >
             <motion.span
               animate={{ rotate: showPast ? 90 : 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               className="inline-block"
             >
               ▶
             </motion.span>
             PAST · {past.length}
-          </button>
+          </motion.button>
 
           <AnimatePresence>
             {showPast && (
@@ -68,16 +117,25 @@ export default function CommitmentsView() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-3 overflow-hidden"
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
               >
-                {past.map((c) => (
-                  <CommitmentCard key={c.id} commitment={c} />
-                ))}
+                <motion.div
+                  className="flex flex-col gap-3"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {past.map((c) => (
+                    <motion.div key={c.id} variants={staggerItem}>
+                      <CommitmentCard commitment={c} />
+                    </motion.div>
+                  ))}
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
       )}
     </div>
   );
