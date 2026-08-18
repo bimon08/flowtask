@@ -8,11 +8,11 @@ import { Task } from '@/types/task';
 type Filter = 'all' | 'today' | 'week' | 'month' | 'year';
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all',   label: 'All'   },
-  { id: 'today', label: 'Today' },
-  { id: 'week',  label: 'Week'  },
-  { id: 'month', label: 'Month' },
-  { id: 'year',  label: 'Year'  },
+  { id: 'all',   label: 'ALL'   },
+  { id: 'today', label: 'TODAY' },
+  { id: 'week',  label: 'WEEK'  },
+  { id: 'month', label: 'MONTH' },
+  { id: 'year',  label: 'YEAR'  },
 ];
 
 function periodStart(filter: Filter): number {
@@ -62,16 +62,16 @@ export default function AllTasksView() {
 
   return (
     <div>
-      {/* ── Filter tabs ── */}
-      <div className="flex gap-1 mb-5 overflow-x-auto no-scrollbar">
+      {/* ── Filter tabs — Nothing style ── */}
+      <div className="flex gap-0 mb-6 overflow-x-auto no-scrollbar">
         {FILTERS.map(({ id, label }) => (
           <button
             key={id}
             onClick={() => setFilter(id)}
-            className={`shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+            className={`shrink-0 px-3 py-1.5 font-dot text-[10px] tracking-wider transition-all duration-150 border-b ${
               filter === id
-                ? 'bg-[#2a2a2a] text-stone-200'
-                : 'text-stone-600 hover:text-stone-400'
+                ? 'text-white border-[var(--accent)]'
+                : 'text-[#444] border-transparent hover:text-[#777]'
             }`}
           >
             {label}
@@ -81,20 +81,20 @@ export default function AllTasksView() {
 
       {/* ── Empty state ── */}
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center py-24 text-stone-700 select-none">
-          <svg className="mb-3" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <p className="text-sm">
-            {filter === 'all' ? 'Nothing to do — enjoy your day' : `No tasks from this ${filter}`}
+        <div className="flex flex-col items-center justify-center py-24 select-none">
+          {/* Dot-matrix circle */}
+          <div className="w-12 h-12 border border-[#1a1a1a] flex items-center justify-center mb-4">
+            <span className="font-dot text-lg text-[#222]">·</span>
+          </div>
+          <p className="font-dot text-[11px] text-[#333] uppercase tracking-wider">
+            {filter === 'all' ? 'Nothing to do' : `No tasks from ${filter}`}
           </p>
         </div>
       )}
 
       {/* ── Pending ── */}
       {pending.length > 0 && (
-        <div className="rounded-2xl overflow-hidden bg-[#1c1c1c]">
+        <div className="border border-[#1a1a1a] bg-[#0a0a0a]">
           <TaskList tasks={pending} sortMode={filter === 'all' ? 'manual' : 'age'} />
         </div>
       )}
@@ -103,34 +103,34 @@ export default function AllTasksView() {
       {done.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between px-1 mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-600">
-              Completed · {done.length}
+            <span className="font-dot text-[10px] uppercase tracking-wider text-[#444]">
+              Done · {done.length}
             </span>
             <button
               onClick={clearAllDone}
-              className="text-xs text-stone-600 hover:text-red-400 transition-colors"
+              className="font-dot text-[10px] text-[#333] hover:text-[var(--accent)] transition-colors uppercase tracking-wider"
             >
-              Clear all
+              Clear
             </button>
           </div>
-          <div className="rounded-2xl overflow-hidden bg-[#1c1c1c]">
+          <div className="border border-[#1a1a1a] bg-[#0a0a0a]">
             {done.map((task, i) => (
               <div
                 key={task.id}
                 className={`flex items-center gap-4 px-5 py-4 ${
-                  i < done.length - 1 ? 'border-b border-[#2a2a2a]' : ''
+                  i < done.length - 1 ? 'border-b border-[#1a1a1a]' : ''
                 }`}
               >
                 <button
                   onClick={() => toggleTask(task.id)}
                   aria-label="Mark as pending"
-                  className="shrink-0 w-[22px] h-[22px] rounded-full bg-[#2a2a2a] border-2 border-[#333] flex items-center justify-center hover:border-stone-500 transition-all duration-200"
+                  className="shrink-0 w-[18px] h-[18px] border border-[#333] flex items-center justify-center hover:border-[#555] transition-all duration-200"
                 >
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none" stroke="#57534e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="8" height="6" viewBox="0 0 10 8" fill="none" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="1 4 3.5 6.5 9 1"/>
                   </svg>
                 </button>
-                <p className="flex-1 text-[15px] line-through text-stone-600 truncate">{task.title}</p>
+                <p className="flex-1 text-[13px] line-through text-[#444] truncate">{task.title}</p>
               </div>
             ))}
           </div>

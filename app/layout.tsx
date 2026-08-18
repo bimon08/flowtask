@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#111111',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
 };
@@ -25,11 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.className}>
       <head>
-        {/* Manifest — explicitly linked so browsers pick it up even if metadata.manifest isn't injected */}
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="min-h-full bg-[#111111]">
+      <body className="min-h-full bg-black">
         {children}
       </body>
     </html>

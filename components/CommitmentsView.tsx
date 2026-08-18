@@ -20,13 +20,16 @@ export default function CommitmentsView() {
     <div>
       {/* ── Empty state ── */}
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center py-24 text-stone-700 select-none">
-          <div className="w-16 h-16 rounded-2xl bg-[#1c1c1c] border border-[#2a2a2a] flex items-center justify-center mb-4">
-            <span className="text-2xl">🛡️</span>
+        <div className="flex flex-col items-center justify-center py-24 select-none">
+          {/* Nothing-style dot grid icon */}
+          <div className="grid grid-cols-3 gap-1 mb-4">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className={`w-2 h-2 ${i === 4 ? 'bg-[var(--accent)]' : 'bg-[#1a1a1a]'}`} />
+            ))}
           </div>
-          <p className="text-sm text-stone-500 mb-1">No commitments yet</p>
-          <p className="text-xs text-stone-600 text-center max-w-[240px]">
-            Tap the + button and choose &quot;Commitment&quot; to start a time-bound challenge
+          <p className="font-dot text-[11px] text-[#333] uppercase tracking-wider mb-1">No commitments</p>
+          <p className="text-[11px] text-[#222] text-center max-w-[240px]">
+            Tap + to start a time-bound challenge
           </p>
         </div>
       )}
@@ -42,22 +45,21 @@ export default function CommitmentsView() {
         </div>
       )}
 
-      {/* ── Past commitments (broken + completed) ── */}
+      {/* ── Past commitments ── */}
       {past.length > 0 && (
         <div className="mt-8">
           <button
             onClick={() => setShowPast(!showPast)}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-600 mb-3 hover:text-stone-400 transition-colors"
+            className="flex items-center gap-2 font-dot text-[10px] uppercase tracking-wider text-[#444] mb-3 hover:text-[#777] transition-colors"
           >
-            <motion.svg
-              width="8" height="8" viewBox="0 0 8 8"
-              fill="currentColor"
+            <motion.span
               animate={{ rotate: showPast ? 90 : 0 }}
               transition={{ duration: 0.15 }}
+              className="inline-block"
             >
-              <path d="M2 0l4 4-4 4z" />
-            </motion.svg>
-            Past · {past.length}
+              ▶
+            </motion.span>
+            PAST · {past.length}
           </button>
 
           <AnimatePresence>
