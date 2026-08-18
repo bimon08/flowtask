@@ -14,3 +14,20 @@ export interface Task {
   estimatedMinutes?: number;
 }
 
+// ── Commitments ──────────────────────────────────────────────
+
+export type CommitmentStatus = 'active' | 'broken' | 'completed';
+
+export interface Commitment {
+  id: string;
+  title: string;
+  description?: string;
+  status: CommitmentStatus;
+  durationDays: number;
+  startedAt: number;
+  checkedInDates: string[];   // ISO date strings, e.g. "2026-08-18"
+  brokenAt?: number;
+  brokenOnDay?: number;
+  completedAt?: number;
+  createdAt: number;
+}

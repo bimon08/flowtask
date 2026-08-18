@@ -10,20 +10,30 @@ interface AddTaskFABProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+type FormMode = 'task' | 'commitment';
+
+const DURATION_PRESETS = [7, 21, 30, 40, 90];
+
 export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABProps) {
   const [open, setOpenRaw]         = useState(false);
   const setOpen = (v: boolean)     => { setOpenRaw(v); onOpenChange?.(v); };
+  const [mode, setMode]            = useState<FormMode>('task');
   const [title, setTitle]          = useState('');
   const [description, setDescription] = useState('');
+  const [duration, setDuration]    = useState(30);
+  const [customDuration, setCustomDuration] = useState('');
+  const [showCustom, setShowCustom] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
-  const addTask  = useTaskStore((s) => s.addTask);
+  const addTask       = useTaskStore((s) => s.addTask);
+  const addCommitment = useTaskStore((s) => s.addCommitment);
 
   useEffect(() => {
     if (open) {
       const t = setTimeout(() => titleRef.current?.focus(), 120);
       return () => clearTimeout(t);
     }
-    setTitle(''); setDescription('');
+    setTitle(''); setDescription(''); setMode('task');
+    setDuration(30); setCustomDuration(''); setShowCustom(false);
   }, [open]);
 
   useEffect(() => {
@@ -36,7 +46,12 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
 
   const submit = () => {
     if (!canSubmit) return;
-    addTask(title.trim(), 'today', description.trim() || undefined);
+    if (mode === 'task') {
+      addTask(title.trim(), 'today', description.trim() || undefined);
+    } else {
+      const finalDuration = showCustom ? (parseInt(customDuration) || 30) : duration;
+      addCommitment(title.trim(), finalDuration, description.trim() || undefined);
+    }
     setOpen(false);
   };
 
@@ -98,13 +113,44 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-3">
-                  <h2 className="text-base font-bold text-stone-100">New task</h2>
+                  <h2 className="text-base font-bold text-stone-100">
+                    {mode === 'task' ? 'New task' : 'New commitment'}
+                  </h2>
                   <button onClick={() => setOpen(false)} aria-label="Close"
                     className="w-8 h-8 flex items-center justify-center rounded-full bg-[#2a2a2a] hover:bg-[#333] text-stone-500 transition-colors">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <path d="M1 1l10 10M11 1L1 11"/>
                     </svg>
                   </button>
+                </div>
+
+                {/* ── Mode toggle: Task | Commitment ── */}
+                <div className="px-5 pb-3">
+                  <div className="flex rounded-xl border border-[#2a2a2a] bg-[#1c1c1c] p-1 gap-1">
+                    {([
+                      { id: 'task' as FormMode, label: '✏️ Task' },
+                      { id: 'commitment' as FormMode, label: '🛡️ Commitment' },
+                    ]).map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setMode(tab.id)}
+                        className={`
+                          relative flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2
+                          text-sm font-medium transition-all duration-150
+                          ${mode === tab.id ? 'text-stone-100' : 'text-stone-600 hover:text-stone-400'}
+                        `}
+                      >
+                        {mode === tab.id && (
+                          <motion.span
+                            layoutId="mode-pill"
+                            className="absolute inset-0 rounded-lg bg-[#2a2a2a]"
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          />
+                        )}
+                        <span className="relative z-10">{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Inputs — scrollable middle */}
@@ -115,7 +161,7 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) submit(); }}
-                    placeholder="Task title"
+                    placeholder={mode === 'task' ? 'Task title' : 'What are you committing to?'}
                     autoComplete="off"
                     className="
                       w-full rounded-2xl border border-[#2a2a2a] bg-[#1c1c1c]
@@ -129,7 +175,7 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                     id="fab-task-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Add a note… (optional)"
+                    placeholder={mode === 'task' ? 'Add a note… (optional)' : 'Your motivation (optional)'}
                     rows={2}
                     className="
                       w-full rounded-2xl border border-[#2a2a2a] bg-[#1c1c1c]
@@ -139,6 +185,79 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                       transition-all duration-200
                     "
                   />
+
+                  {/* ── Duration picker (commitment mode only) ── */}
+                  <AnimatePresence>
+                    {mode === 'commitment' && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="mt-3 overflow-hidden"
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-600 mb-2">
+                          Duration
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {DURATION_PRESETS.map((d) => (
+                            <button
+                              key={d}
+                              onClick={() => { setDuration(d); setShowCustom(false); }}
+                              className={`
+                                px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150
+                                ${!showCustom && duration === d
+                                  ? 'bg-violet-500/15 text-violet-400 border border-violet-500/25'
+                                  : 'bg-[#1c1c1c] text-stone-500 border border-[#2a2a2a] hover:text-stone-300'}
+                              `}
+                            >
+                              {d}d
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setShowCustom(true)}
+                            className={`
+                              px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150
+                              ${showCustom
+                                ? 'bg-violet-500/15 text-violet-400 border border-violet-500/25'
+                                : 'bg-[#1c1c1c] text-stone-500 border border-[#2a2a2a] hover:text-stone-300'}
+                            `}
+                          >
+                            Custom
+                          </button>
+                        </div>
+
+                        {/* Custom duration input */}
+                        <AnimatePresence>
+                          {showCustom && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mt-2 overflow-hidden"
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="365"
+                                  value={customDuration}
+                                  onChange={(e) => setCustomDuration(e.target.value)}
+                                  placeholder="Enter days"
+                                  className="
+                                    flex-1 rounded-xl border border-[#2a2a2a] bg-[#1c1c1c]
+                                    px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-600
+                                    outline-none focus:border-violet-500 transition-colors
+                                  "
+                                />
+                                <span className="text-sm text-stone-500">days</span>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Footer — always pinned at bottom */}
@@ -156,7 +275,7 @@ export default function AddTaskFAB({ className = '', onOpenChange }: AddTaskFABP
                       transition-all duration-150
                     "
                   >
-                    Add Task
+                    {mode === 'task' ? 'Add Task' : 'Start Commitment'}
                   </motion.button>
                 </div>
               </motion.div>

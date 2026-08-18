@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import AllTasksView from '@/components/AllTasksView';
+import CommitmentsView from '@/components/CommitmentsView';
 import AddTaskFAB from '@/components/AddTaskFAB';
+
+type ViewMode = 'tasks' | 'commitments';
 
 function MottoModal({ onClose }: { onClose: () => void }) {
   return (
@@ -53,11 +56,11 @@ function MottoModal({ onClose }: { onClose: () => void }) {
             An idiom meaning <span className="text-stone-200 font-medium">by any means necessary</span> — whatever it takes to get the job done.
           </p>
           <p className="text-sm text-stone-500 leading-relaxed mb-4">
-            The phrase dates to medieval England, where peasants were allowed to gather fallen wood from a lord's forest using either a <span className="text-stone-400">hook</span> (a curved blade to pull branches) or a <span className="text-stone-400">crook</span> (a shepherd's staff to drag them down) — but no other tools. Over centuries it evolved to mean achieving any goal through whatever methods are available.
+            The phrase dates to medieval England, where peasants were allowed to gather fallen wood from a lord&apos;s forest using either a <span className="text-stone-400">hook</span> (a curved blade to pull branches) or a <span className="text-stone-400">crook</span> (a shepherd&apos;s staff to drag them down) — but no other tools. Over centuries it evolved to mean achieving any goal through whatever methods are available.
           </p>
           <div className="rounded-xl border border-[#252525] bg-[#151515] px-4 py-3">
             <p className="text-xs text-stone-500 italic leading-relaxed">
-              "I'll finish every task on this list — by hook or by crook."
+              &quot;I&apos;ll finish every task on this list — by hook or by crook.&quot;
             </p>
           </div>
         </motion.div>
@@ -69,6 +72,7 @@ function MottoModal({ onClose }: { onClose: () => void }) {
 export default function Home() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [mottoOpen, setMottoOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('tasks');
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -102,12 +106,51 @@ export default function Home() {
 
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-600 mb-1">My Day</p>
           <h1 className="text-2xl font-bold text-stone-100 tracking-tight">{today}</h1>
+
+          {/* ── View mode tabs: Tasks | Commitments ── */}
+          <div className="flex rounded-xl border border-[#2a2a2a] bg-[#1c1c1c] p-1 gap-1 mt-4">
+            {([
+              { id: 'tasks' as ViewMode, label: 'Tasks', emoji: '✏️' },
+              { id: 'commitments' as ViewMode, label: 'Commitments', emoji: '🛡️' },
+            ]).map((tab) => (
+              <button
+                key={tab.id}
+                id={`view-tab-${tab.id}`}
+                onClick={() => setViewMode(tab.id)}
+                className={`
+                  relative flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2
+                  text-sm font-medium transition-all duration-150
+                  ${viewMode === tab.id ? 'text-stone-100' : 'text-stone-600 hover:text-stone-400'}
+                `}
+              >
+                {viewMode === tab.id && (
+                  <motion.span
+                    layoutId="view-tab-pill"
+                    className="absolute inset-0 rounded-lg bg-[#2a2a2a]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.emoji}</span>
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       {/* Content */}
       <div className="mx-auto max-w-lg px-5 pb-40 pt-6">
-        <AllTasksView />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={viewMode}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            {viewMode === 'tasks' ? <AllTasksView /> : <CommitmentsView />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* FAB — always mounted so the sheet stays alive when open */}
