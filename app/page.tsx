@@ -43,18 +43,33 @@ function MottoModal({ onClose }: { onClose: () => void }) {
           </button>
 
           <h2 className="font-dot text-sm text-[var(--accent)] mb-1 uppercase">By hook or by crook</h2>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#555] font-semibold mb-3">Origin &amp; Meaning</p>
-          <p className="text-sm text-[#999] leading-relaxed mb-4">
-            An idiom meaning <span className="text-white font-medium">by any means necessary</span> — whatever it takes to get the job done.
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#555] font-semibold mb-4">Origin &amp; Meaning</p>
+
+          <p className="text-sm text-[#999] leading-relaxed mb-3">
+            An idiom meaning <span className="text-white font-medium">by any means necessary</span> — whatever it takes to get the job done, no matter how difficult or unconventional the path.
           </p>
+
+          <p className="text-sm text-[#666] leading-relaxed mb-3">
+            The phrase dates to <span className="text-[#999]">medieval England</span>, where peasants were allowed to gather fallen wood from the king&apos;s forests using only a <span className="text-[#999]">shepherd&apos;s crook</span> or a <span className="text-[#999]">billhook</span> — no axes, no saws. They had to work within strict constraints, but they found a way.
+          </p>
+
+          <p className="text-sm text-[#666] leading-relaxed mb-3">
+            First recorded in the <span className="text-[#999]">14th century</span> by theologian John Wycliffe, the phrase has survived nearly 700 years because its message is timeless: <span className="text-white font-medium">resourcefulness beats resources</span>.
+          </p>
+
           <p className="text-sm text-[#666] leading-relaxed mb-4">
-            The phrase dates to medieval England, where peasants were allowed to gather fallen wood using either a <span className="text-[#999]">hook</span> or a <span className="text-[#999]">crook</span> — but no other tools.
+            That&apos;s the spirit behind FlowTask. You don&apos;t need the perfect system, the perfect day, or the perfect mood. You just need to <span className="text-[#999]">start</span>, <span className="text-[#999]">adapt</span>, and <span className="text-[#999]">keep going</span> — by hook or by crook.
           </p>
-          <div className="border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3">
+
+          <div className="border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 mb-3">
             <p className="text-xs text-[#555] italic leading-relaxed">
               &quot;I&apos;ll finish every task on this list — by hook or by crook.&quot;
             </p>
           </div>
+
+          <p className="font-dot text-[9px] text-[#333] uppercase tracking-wider text-center">
+            Now close this and get to work.
+          </p>
         </motion.div>
       </motion.div>
     </AnimatePresence>
