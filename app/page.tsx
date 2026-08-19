@@ -6,6 +6,7 @@ import AllTasksView from '@/components/AllTasksView';
 import CommitmentsView from '@/components/CommitmentsView';
 import AddTaskFAB from '@/components/AddTaskFAB';
 import { useDevSeed } from '@/hooks/useDevSeed';
+import { useTaskStore } from '@/store/useTaskStore';
 
 type ViewMode = 'tasks' | 'commitments';
 
@@ -87,6 +88,13 @@ export default function Home() {
 
   useDevSeed();
 
+  // Check if any active commitment hasn't been checked in today
+  const commitments = useTaskStore((s) => s.commitments);
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const hasPendingCheckIn = commitments.some(
+    (c) => c.status === 'active' && !c.checkedInDates.includes(todayISO)
+  );
+
   return (
     <main className="min-h-screen bg-black">
       {/* Header */}
@@ -151,6 +159,15 @@ export default function Home() {
                 `}
               >
                 {tab.label}
+                {/* Pending check-in dot on Commitments tab */}
+                {tab.id === 'commitments' && hasPendingCheckIn && (
+                  <motion.span
+                    className="absolute -top-1 right-2 w-[6px] h-[6px] rounded-full bg-[var(--accent)]"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                )}
                 {viewMode === tab.id && (
                   <motion.div
                     layoutId="view-tab-underline"
