@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import AllTasksView from '@/components/AllTasksView';
 import CommitmentsView from '@/components/CommitmentsView';
@@ -9,6 +9,61 @@ import { useDevSeed } from '@/hooks/useDevSeed';
 import { useTaskStore } from '@/store/useTaskStore';
 
 type ViewMode = 'tasks' | 'commitments';
+
+/* ─── XP Flyout ──────────────────────────────────────────── */
+/* Shows a "+10" / "+15" / "+100" that pops up and fades out  */
+
+function XPCounter() {
+  const xp = useTaskStore((s) => s.xp);
+  const xpHistory = useTaskStore((s) => s.xpHistory);
+  const [flyout, setFlyout] = useState<{ amount: number; key: number } | null>(null);
+  const prevXpRef = useRef(xp);
+  const flyoutCounter = useRef(0);
+
+  useEffect(() => {
+    if (xp > prevXpRef.current && xpHistory.length > 0) {
+      const gained = xp - prevXpRef.current;
+      flyoutCounter.current += 1;
+      setFlyout({ amount: gained, key: flyoutCounter.current });
+      const timeout = setTimeout(() => setFlyout(null), 1400);
+      prevXpRef.current = xp;
+      return () => clearTimeout(timeout);
+    }
+    prevXpRef.current = xp;
+  }, [xp, xpHistory]);
+
+  return (
+    <div className="relative flex items-center gap-1.5">
+      <span className="font-dot text-[11px] text-[#555]">▸</span>
+      <motion.span
+        key={xp}
+        initial={{ scale: 1.3, color: '#ffffff' }}
+        animate={{ scale: 1, color: '#666666' }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="font-dot text-[13px] tabular-nums"
+      >
+        {xp}
+      </motion.span>
+      <span className="font-dot text-[10px] text-[#444] uppercase">XP</span>
+
+      {/* Flyout */}
+      <AnimatePresence>
+        {flyout && (
+          <motion.span
+            key={flyout.key}
+            initial={{ opacity: 1, y: 0, scale: 1 }}
+            animate={{ opacity: 0, y: -24, scale: 0.8 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+            className="absolute -top-1 -right-6 font-dot text-[11px] text-[var(--accent)] pointer-events-none whitespace-nowrap"
+          >
+            +{flyout.amount}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function MottoModal({ onClose }: { onClose: () => void }) {
   return (
@@ -133,7 +188,10 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
           >
-            {today}
+            <div className="flex items-center justify-between">
+              <span>{today}</span>
+              <XPCounter />
+            </div>
           </motion.h1>
 
           {/* Decorative dot line */}

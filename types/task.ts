@@ -31,3 +31,11 @@ export interface Commitment {
   completedAt?: number;
   createdAt: number;
 }
+
+// ── XP System ────────────────────────────────────────────────
+
+export interface XPEntry {
+  amount: number;
+  reason: string;
+  timestamp: number;
+}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTaskStore } from '@/store/useTaskStore';
 import { Commitment } from '@/types/task';
+import ConfettiBurst from './ConfettiBurst';
 
 /* ─── Helpers ────────────────────────────────────────────── */
 
@@ -124,6 +125,8 @@ interface CommitmentCardProps {
 export default function CommitmentCard({ commitment }: CommitmentCardProps) {
   const [confirmBreak, setConfirmBreak] = useState(false);
   const [justCheckedIn, setJustCheckedIn] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
+  const [confettiVariant, setConfettiVariant] = useState<'small' | 'big'>('small');
 
   const checkIn  = useTaskStore((s) => s.checkInCommitment);
   const breakIt  = useTaskStore((s) => s.breakCommitment);
@@ -143,8 +146,15 @@ export default function CommitmentCard({ commitment }: CommitmentCardProps) {
   }, [commitment, currentDay]);
 
   const handleCheckIn = () => {
+    // Detect if this check-in will complete the commitment
+    const currentDay = Math.min(daysBetween(commitment.startedAt, Date.now()), commitment.durationDays);
+    const newCheckedCount = commitment.checkedInDates.length + 1;
+    const willComplete = currentDay >= commitment.durationDays && newCheckedCount >= commitment.durationDays;
+
     checkIn(commitment.id);
     setJustCheckedIn(true);
+    setConfettiVariant(willComplete ? 'big' : 'small');
+    setConfettiKey((k) => k + 1);
     setTimeout(() => setJustCheckedIn(false), 1200);
   };
 
@@ -166,13 +176,15 @@ export default function CommitmentCard({ commitment }: CommitmentCardProps) {
       exit={{ opacity: 0, y: -12, height: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className={`
-        relative border bg-[#0a0a0a] p-5
+        relative overflow-visible border bg-[#0a0a0a] p-5
         transition-all duration-200
         ${commitment.status === 'broken' ? 'border-[var(--accent)]/30' :
           commitment.status === 'completed' ? 'border-[var(--success)]/30' :
           'border-[#1a1a1a]'}
       `}
     >
+      {/* Confetti burst */}
+      <ConfettiBurst variant={confettiVariant} triggerKey={confettiKey} />
       {/* ── Header: status + delete ── */}
       <div className="flex items-center justify-between mb-4">
         <span className={`font-dot text-[10px] uppercase tracking-wider ${

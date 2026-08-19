@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTaskStore } from '@/store/useTaskStore';
 import { Task } from '@/types/task';
+import ConfettiBurst from './ConfettiBurst';
 
 /* ─── Age logic ──────────────────────────────────────────── */
 
@@ -68,6 +69,7 @@ export default function SortableTaskItem({ task, dragDisabled = false }: Props) 
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDesc,  setEditDesc]  = useState(task.description ?? '');
   const [justCompleted, setJustCompleted] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
   const titleRef = useRef<HTMLInputElement>(null);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -104,6 +106,7 @@ export default function SortableTaskItem({ task, dragDisabled = false }: Props) 
   const handleToggle = () => {
     if (task.status !== 'done') {
       setJustCompleted(true);
+      setConfettiKey((k) => k + 1);
       setTimeout(() => {
         toggleTask(task.id);
         setMode('collapsed');
@@ -139,34 +142,37 @@ export default function SortableTaskItem({ task, dragDisabled = false }: Props) 
       <div className="flex items-center gap-3 px-5 py-4">
 
         {/* Checkbox — animated check */}
-        <motion.button
-          role="checkbox"
-          aria-checked={isDone}
-          onClick={handleToggle}
-          whileTap={{ scale: 0.8 }}
-          className={`shrink-0 w-[18px] h-[18px] border flex items-center justify-center transition-all duration-200
-            ${isDone || justCompleted ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[#333] hover:border-[var(--accent)]'}`}
-        >
-          <AnimatePresence>
-            {(isDone || justCompleted) && (
-              <motion.svg
-                key="check"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                width="8" height="6" viewBox="0 0 10 8" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              >
-                <motion.polyline
-                  points="1 4 3.5 6.5 9 1"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                />
-              </motion.svg>
-            )}
-          </AnimatePresence>
-        </motion.button>
+        <div className="relative">
+          <motion.button
+            role="checkbox"
+            aria-checked={isDone}
+            onClick={handleToggle}
+            whileTap={{ scale: 0.8 }}
+            className={`shrink-0 w-[18px] h-[18px] border flex items-center justify-center transition-all duration-200
+              ${isDone || justCompleted ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[#333] hover:border-[var(--accent)]'}`}
+          >
+            <AnimatePresence>
+              {(isDone || justCompleted) && (
+                <motion.svg
+                  key="check"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  width="8" height="6" viewBox="0 0 10 8" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                >
+                  <motion.polyline
+                    points="1 4 3.5 6.5 9 1"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                  />
+                </motion.svg>
+              )}
+            </AnimatePresence>
+          </motion.button>
+          <ConfettiBurst variant="small" triggerKey={confettiKey} />
+        </div>
 
         {/* Title + description preview — tap to expand */}
         <motion.button

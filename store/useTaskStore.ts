@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { arrayMove } from '@dnd-kit/sortable';
-import { Task, TaskScope, TaskStatus, Commitment } from '@/types/task';
+import { Task, TaskScope, TaskStatus, Commitment, XPEntry } from '@/types/task';
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -22,6 +22,8 @@ function daysBetween(startMs: number, nowMs: number): number {
 interface TaskStore {
   tasks: Task[];
   commitments: Commitment[];
+  xp: number;
+  xpHistory: XPEntry[];
 
   // Task actions
   addTask: (title: string, scope: TaskScope, description?: string) => void;
@@ -39,6 +41,9 @@ interface TaskStore {
   breakCommitment: (id: string) => void;
   restartCommitment: (id: string) => void;
   deleteCommitment: (id: string) => void;
+
+  // XP actions
+  addXP: (amount: number, reason: string) => void;
 }
 
 export const useTaskStore = create<TaskStore>()(
@@ -46,6 +51,8 @@ export const useTaskStore = create<TaskStore>()(
     (set, get) => ({
       tasks: [],
       commitments: [],
+      xp: 0,
+      xpHistory: [],
 
       // ── Task actions (unchanged) ─────────────────────────────
 
@@ -66,6 +73,8 @@ export const useTaskStore = create<TaskStore>()(
       },
 
       toggleTask: (id) => {
+        const task = get().tasks.find((t) => t.id === id);
+        const isCompleting = task?.status === 'pending';
         set((state) => ({
           tasks: state.tasks.map((t) =>
             t.id === id
@@ -77,6 +86,9 @@ export const useTaskStore = create<TaskStore>()(
               : t
           ),
         }));
+        if (isCompleting) {
+          get().addXP(10, `Completed: ${task!.title}`);
+        }
       },
 
       editTask: (id, title, description) => {
@@ -155,10 +167,15 @@ export const useTaskStore = create<TaskStore>()(
 
       checkInCommitment: (id) => {
         const today = todayISO();
+        const commitment = get().commitments.find((c) => c.id === id);
+        if (!commitment || commitment.status !== 'active') return;
+        if (commitment.checkedInDates.includes(today)) return;
+
+        let didComplete = false;
         set((state) => ({
           commitments: state.commitments.map((c) => {
             if (c.id !== id || c.status !== 'active') return c;
-            if (c.checkedInDates.includes(today)) return c; // already checked in
+            if (c.checkedInDates.includes(today)) return c;
 
             const updated = { ...c, checkedInDates: [...c.checkedInDates, today] };
 
@@ -167,11 +184,18 @@ export const useTaskStore = create<TaskStore>()(
             if (currentDay >= c.durationDays && updated.checkedInDates.length >= c.durationDays) {
               updated.status = 'completed';
               updated.completedAt = Date.now();
+              didComplete = true;
             }
 
             return updated;
           }),
         }));
+
+        // Award XP: +15 for check-in, +100 bonus for completion
+        get().addXP(15, `Check-in: ${commitment.title}`);
+        if (didComplete) {
+          get().addXP(100, `Completed commitment: ${commitment.title}`);
+        }
       },
 
       breakCommitment: (id) => {
@@ -210,6 +234,16 @@ export const useTaskStore = create<TaskStore>()(
       deleteCommitment: (id) => {
         set((state) => ({
           commitments: state.commitments.filter((c) => c.id !== id),
+        }));
+      },
+
+      // ── XP actions ────────────────────────────────────────────
+
+      addXP: (amount, reason) => {
+        const entry: XPEntry = { amount, reason, timestamp: Date.now() };
+        set((state) => ({
+          xp: state.xp + amount,
+          xpHistory: [entry, ...state.xpHistory].slice(0, 50),
         }));
       },
     }),
