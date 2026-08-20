@@ -290,10 +290,15 @@ export default function Home() {
           <motion.div
             key={viewMode}
             custom={swipeDir}
-            initial={{ opacity: 0, x: -30 * swipeDir }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 30 * swipeDir }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            variants={{
+              enter: (dir: number) => ({ opacity: 0, x: -12 * dir }),
+              center: { opacity: 1, x: 0 },
+              exit: (dir: number) => ({ opacity: 0, x: 12 * dir }),
+            }}
+            transition={{ duration: 0.08, ease: 'easeOut' }}
           >
             {viewMode === 'tasks' ? <AllTasksView /> : <CommitmentsView />}
           </motion.div>
