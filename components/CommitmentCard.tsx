@@ -171,10 +171,10 @@ export default function CommitmentCard({ commitment }: CommitmentCardProps) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12, height: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`
         relative overflow-visible border bg-[#0a0a0a] p-5
         transition-all duration-200

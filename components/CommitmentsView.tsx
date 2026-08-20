@@ -7,16 +7,16 @@ import CommitmentCard from './CommitmentCard';
 
 /* ─── Stagger variants ────────────────────────────────────── */
 const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.03, delayChildren: 0 },
   },
 };
 
 const staggerItem = {
-  hidden: { opacity: 0, y: 16, scale: 0.97 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' as const } },
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.1, ease: 'easeOut' as const } },
 };
 
 export default function CommitmentsView() {
@@ -72,15 +72,20 @@ export default function CommitmentsView() {
 
       {/* ── Active commitments — staggered entry ── */}
       {active.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <motion.div
+          className="flex flex-col gap-3"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
           <AnimatePresence mode="popLayout">
             {active.map((c) => (
-              <motion.div key={c.id} layout>
+              <motion.div key={c.id} variants={staggerItem} layout>
                 <CommitmentCard commitment={c} />
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Past commitments — collapsible with animation ── */}
