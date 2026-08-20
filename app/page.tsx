@@ -132,10 +132,13 @@ function MottoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const VIEW_MODES: ViewMode[] = ['tasks', 'commitments'];
+
 export default function Home() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [mottoOpen, setMottoOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('tasks');
+  const [swipeDir, setSwipeDir] = useState<1 | -1>(1); // 1 = left-to-right, -1 = right-to-left
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -149,6 +152,44 @@ export default function Home() {
   const hasPendingCheckIn = commitments.some(
     (c) => c.status === 'active' && !c.checkedInDates.includes(todayISO)
   );
+
+  // ── Swipe handling ──
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+
+    // Only count as swipe if horizontal distance > 50px and more horizontal than vertical
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+
+    const currentIdx = VIEW_MODES.indexOf(viewMode);
+    if (dx < 0 && currentIdx < VIEW_MODES.length - 1) {
+      // Swipe left → next tab
+      setSwipeDir(-1);
+      setViewMode(VIEW_MODES[currentIdx + 1]);
+    } else if (dx > 0 && currentIdx > 0) {
+      // Swipe right → previous tab
+      setSwipeDir(1);
+      setViewMode(VIEW_MODES[currentIdx - 1]);
+    }
+  };
+
+  // When switching via tab click, infer direction from tab position
+  const switchTab = (tab: ViewMode) => {
+    const fromIdx = VIEW_MODES.indexOf(viewMode);
+    const toIdx = VIEW_MODES.indexOf(tab);
+    setSwipeDir(toIdx > fromIdx ? -1 : 1);
+    setViewMode(tab);
+  };
 
   return (
     <main className="min-h-screen bg-black">
@@ -206,7 +247,7 @@ export default function Home() {
               <button
                 key={tab.id}
                 id={`view-tab-${tab.id}`}
-                onClick={() => setViewMode(tab.id)}
+                onClick={() => switchTab(tab.id)}
                 className={`
                   relative flex-1 py-2.5 text-center
                   font-dot text-[11px] tracking-wider
@@ -239,15 +280,20 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Content */}
-      <div className="mx-auto max-w-lg px-5 pb-40 pt-6">
-        <AnimatePresence mode="wait">
+      {/* Content — swipeable area */}
+      <div
+        className="mx-auto max-w-lg px-5 pb-40 pt-6"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait" custom={swipeDir}>
           <motion.div
             key={viewMode}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            custom={swipeDir}
+            initial={{ opacity: 0, x: -30 * swipeDir }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 * swipeDir }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {viewMode === 'tasks' ? <AllTasksView /> : <CommitmentsView />}
           </motion.div>
