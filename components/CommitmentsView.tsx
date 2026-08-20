@@ -72,20 +72,15 @@ export default function CommitmentsView() {
 
       {/* ── Active commitments — staggered entry ── */}
       {active.length > 0 && (
-        <motion.div
-          className="flex flex-col gap-3"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
+        <div className="flex flex-col gap-3">
           <AnimatePresence mode="popLayout">
             {active.map((c) => (
-              <motion.div key={c.id} variants={staggerItem} layout>
+              <motion.div key={c.id} layout>
                 <CommitmentCard commitment={c} />
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
 
       {/* ── Past commitments — collapsible with animation ── */}
